@@ -1,0 +1,912 @@
+@extends('layout')
+@section('page_title', 'Vendor Details')
+@section('content')
+
+<style>
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 50px;
+    }
+
+    td, th {
+        border: 1px solid #000;
+        text-align: center;
+        padding: 8px;
+    }
+</style>
+    
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <form method="POST" action="{{ route('update-seller') }}">
+                    @csrf
+                <div id="printable" class="myDivToPrint">
+                    <h4 class="page-section-heading">Vendor Details</h4>
+                    @if(in_array($vendor->account_status, array('active', 'inactive')))
+                    <div class="row">
+                        <!-- VENDOR CODE -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default">
+                                <label for="seller_code">Seller Code</label>
+                                <input type="text" class="form-control" id="seller_code" placeholder="Seller Code" value="{{ $vendor->seller_code }}" disabled>
+                            </div>
+                        </div>
+
+                        <!-- EMAIL -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default">
+                                <label for="member_since">Member Since</label>
+                                <input type="text" class="form-control" id="member_since" placeholder="Email" value="{{ date('Y-m-d', strtotime($vendor->member_since)) }}" disabled>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    <div class="row">
+                        <!-- VENDOR NAME -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default required">
+                                <!-- LABEL -->
+                                <label for="name">Name</label>
+
+                                <!-- CURRENT VALUE -->
+                                <input type="text" name="name" class="form-control" id="name" placeholder="Name" value="{{ $vendor->name }}" required>
+
+                                <!-- HIDDEN INPUT FIELD FOR SELLER ID -->
+                                <input type="hidden" name="seller_id" class="form-control" value="{{ $vendor->id }}" required id="seller_id">
+
+                                <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                @if($infoChangeRequest && $infoChangeRequest->name !== NULL)
+                                    <input type="text" class="form-control" style="color:blue;font-weight: bold;" value="Change Request To: {{ $infoChangeRequest->name }}" disabled>
+                                    <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('name')">
+                                    <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('name')">
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- EMAIL -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default required">
+                                <!-- LABEL -->
+                                <label for="email">Email</label>
+
+                                <!-- CURRENT VALUE -->
+                                <input type="email" name="email" class="form-control" id="email" placeholder="Email" value="{{ $vendor->email }}" required>
+
+                                <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                @if($infoChangeRequest && $infoChangeRequest->email !== NULL)
+                                    <input type="text" class="form-control" style="color:blue;font-weight: bold;" value="Change Request To: {{ $infoChangeRequest->email }}" disabled>
+                                    <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('email')">
+                                    <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('email')">
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- GENDER -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default required">
+                                <!-- LABEL -->
+                                <label for="gender">Gender</label>
+                                
+                                <!-- CURRENT VALUE & DROPDOWN -->
+                                <select style="width: 100%;" data-toggle="select2" name="gender" id="gender" data-placeholder="Select gender.." data-allow-clear="false" required>
+                                <option></option>
+                                    <option value="male" @if($vendor->gender=="male") selected @endif>Male</option>
+                                    <option value="female" @if($vendor->gender=="female") selected @endif>Female</option>
+                                    <option value="other" @if($vendor->gender=="other") selected @endif>Other</option>
+                                </select>
+
+                                <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                @if($infoChangeRequest && $infoChangeRequest->gender !== NULL)
+                                    <input type="text" class="form-control" style="color:blue;font-weight: bold;" value="Change Request To: {{ $infoChangeRequest->gender }}" disabled>
+                                    <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('gender')">
+                                    <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('gender')">
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- AGE -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default required">
+                                <!-- AGE -->
+                                <label for="age">Age</label>
+
+                                <!-- CURRENT VALUE -->
+                                <input type="number" class="form-control" name="age" id="age" placeholder="Age" value="{{ $vendor->age }}" required>
+
+                                <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                @if($infoChangeRequest && $infoChangeRequest->age !== NULL)
+                                    <input type="text" class="form-control" style="color:blue;font-weight: bold;" value="Change Request To: {{ $infoChangeRequest->age }}" disabled>
+                                    <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('age')">
+                                    <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('age')">
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <!-- COUNTRY -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default required">
+                                <!-- LABEL -->
+                                <label for="country">Country</label>
+
+                                <!-- CURRENT VALUE & DROPDOWN -->
+                                <select style="width: 100%;" data-toggle="select2" name="country" id="country" data-placeholder="Select country .." data-allow-clear="false" required>
+                                    <option></option>
+                                    @foreach($countryList as $cntItem)
+                                        <option value="{{ $cntItem->id }}" @if($vendor->country_id == $cntItem->id) selected @endif> {{ $cntItem->country_name }}</option>
+                                    @endforeach
+                                </select>
+
+                                <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                @if($infoChangeRequest && $infoChangeRequest->country_id !== NULL)
+                                    <input type="text" class="form-control" style="color:blue;font-weight: bold;" value="Change Request To: {{ $infoChangeRequest->country->country_name }}" disabled>
+                                    <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('country_id')">
+                                    <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('country_id')">
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- CITY -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default required">
+                                <!-- LABEL -->
+                                <label for="city">City</label>
+
+                                <!-- CURRENT VALUE & DROPDOWN -->
+                                <input type="text" style="width: 100%;" class="form-control" id="city" name="city" required>
+                                
+                                <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                @if($infoChangeRequest && $infoChangeRequest->city_id !== NULL)
+                                    <input type="text" class="form-control" style="color:blue;font-weight: bold;" value="Change Request To: {{ $infoChangeRequest->city->city_name }}" disabled>
+                                    <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('city_id')">
+                                    <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('city_id')">
+                                @endif
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <!-- SHOP NAME -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default required">
+                                <!-- LABEL -->
+                                <label for="shop_name">Shop Name</label>
+
+                                <!-- CURRENT VALUE -->
+                                <input type="text" class="form-control" name="shop_name" id="shop_name" placeholder="Shop Name" value="{{ $vendor->shop_name }}" required>
+
+                                <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                @if($infoChangeRequest && $infoChangeRequest->shop_name !== NULL)
+                                    <input type="text" class="form-control" style="color:blue;font-weight: bold;" value="Change Request To: {{ $infoChangeRequest->shop_name }}" disabled>
+                                    <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('shop_name')">
+                                    <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('shop_name')">
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- COMPANY NAME -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default">
+                                <!-- LABEL -->
+                                <label for="company_name">Company Name</label>
+
+                                <!-- CURRENT VALUE -->
+                                <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Company Name" value="{{ $vendor->company_name }}">
+
+                                <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                @if($infoChangeRequest && $infoChangeRequest->company_name !== NULL)
+                                    <input type="text" class="form-control" style="color:blue;font-weight: bold;" value="Change Request To: {{ $infoChangeRequest->company_name }}" disabled>
+                                    <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('company_name')">
+                                    <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('company_name')">
+                                @endif
+                            </div>
+                        </div>  
+                    </div>
+
+                    <div class="row">
+                        <!-- SHOP ADDRESS -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default required">
+                                <!-- LABEL -->
+                                <label for="shop_address">Shop Address</label>
+
+                                <!-- CURRENT VALUE -->
+                                <textarea class="form-control" id="shop_address" name="shop_address" placeholder="Shop address" required>{{ $vendor->shop_address }}</textarea>
+
+                                <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                @if($infoChangeRequest && $infoChangeRequest->shop_address !== NULL)
+                                    <input type="text" class="form-control" style="color:blue;font-weight: bold;" value="Change Request To: {{ $infoChangeRequest->shop_address }}" disabled>
+                                    <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('shop_address')">
+                                    <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('shop_address')">
+                                @endif
+                            </div>              
+                        </div>
+
+                        <!-- COMPANY ADDRESS -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default">
+                                <!-- LABEL -->
+                                <label for="company_address">Company Address</label>
+
+                                <!-- CURRENT VALUE -->
+                                <textarea class="form-control" id="company_address" name="company_address" placeholder="Company address">{{ $vendor->company_address }}</textarea>
+
+                                <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                @if($infoChangeRequest && $infoChangeRequest->company_address !== NULL)
+                                    <input type="text" class="form-control" style="color:blue;font-weight: bold;" value="Change Request To: {{ $infoChangeRequest->company_address }}" disabled>
+                                    <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('company_address')">
+                                    <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('company_address')">
+                                @endif
+                            </div>              
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <!-- ACCOUNT TYPE -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default required">
+                                <!-- LABEL -->
+                                <label for="account_type">Account Type</label>
+
+                                <!-- CURRENT VALUE & DROPDOWN -->
+                                <select style="width: 100%;" data-toggle="select2" name="account_type" id="account_type" data-placeholder="Select account type .." data-allow-clear="false" required>
+                                    <option></option>
+                                    <option value="individual" @if( $vendor->account_type == 'individual' ) selected @endif>Individual</option>
+                                    <option value="business" @if( $vendor->account_type == 'business' ) selected @endif>Business</option>
+                                </select>
+
+                                <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                @if($infoChangeRequest && $infoChangeRequest->account_type !== NULL)
+                                    <input type="text" class="form-control" style="color:blue;font-weight: bold;" value="Change Request To: {{ $infoChangeRequest->account_type }}" disabled>
+                                    <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('account_type')">
+                                    <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('account_type')">
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- PHONE -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default required">
+                                <!-- LABEL -->
+                                <label for="phone">Phone</label>
+
+                                <!-- CURRENT VALUE -->
+                                <input type="text" name="phone" class="form-control" id="phone" placeholder="Phone" value="{{ $vendor->phone }}" required>
+
+                                <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                @if($infoChangeRequest && $infoChangeRequest->phone !== NULL)
+                                    <input type="text" class="form-control" style="color:blue;font-weight: bold;" value="Change Request To: {{ $infoChangeRequest->phone }}" disabled>
+                                    <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('phone')">
+                                    <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('phone')">
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- CURRENCY -->
+                        <div class="col-md-6">
+                            <div class="form-group form-control-default required">
+                                <!-- LABEL -->
+                                <label for="currency">Currency</label>
+
+                                <!-- CURRENT VALUE -->
+                                <input type="text" name="currency" class="form-control" id="currency" placeholder="Currency" value="{{ $vendor->currency->title }}" readonly>
+                            </div>
+                        </div>
+
+                        <!-- PHONE -->
+                        <div class="col-md-6"></div>
+                    </div>
+
+                    @if(in_array($vendor->account_status, array('final_declined','final_approval_pending', 'active', 'inactive')))
+                        <div id="nonPrintables">
+                            <h4 class="page-section-heading">Vendor Documents</h4>
+                            <div class="row">
+                                <!-- PHOTO -->
+                                <div class="col-md-6">
+                                    <div class="form-group form-control-default">
+                                        <!-- LABEL -->
+                                        <label for="photoUrl">Photo</label>
+
+                                        <!-- CURRENT VALUE & PREVIEW -->
+                                        <input type="hidden" disabled id="photoUrl" value="{{ env('AKP_STORAGE') . '/seller_attachments/' . $vendor->photo_url}}">
+                                        <button class="btn btn-info" type="button" onclick="showPreview('Photo','photoUrl')">View Photo <i class="fa fa-file-image-o"></i></button>
+
+
+                                        <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                        @if($infoChangeRequest && $infoChangeRequest->photo_url !== NULL)
+                                            <button class="btn btn-warning" type="button" onclick="showPreview('Photo','newPhotoUrl')">Pending Change <i class="fa fa-file-image-o"></i></button>
+                                            <input type="hidden" disabled id="newPhotoUrl" value="{{ env('AKP_STORAGE') . '/seller_attachments/' . $infoChangeRequest->photo_url}}">
+                                            <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('photo_url')">
+                                            <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('photo_url')">
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <!-- NID -->
+                                <div class="col-md-6">
+                                    <div class="form-group form-control-default">
+                                        <!-- LABEL -->
+                                        <label for="nidUrl">NID</label>
+
+                                        <!-- CURRENT VALUE & PREVIEW -->
+                                        <input type="hidden" disabled id="nidUrl" value="{{ env('AKP_STORAGE') . '/seller_attachments/' . $vendor->nid_url}}">
+                                        <button class="btn btn-info" type="button" onclick="showPreview('NID','nidUrl')">View NID <i class="fa fa-file-image-o"></i></button>
+
+                                        <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                        @if($infoChangeRequest && $infoChangeRequest->nid_url !== NULL)
+                                            <button class="btn btn-warning" type="button" onclick="showPreview('NID','newNidUrl')">Pending Change <i class="fa fa-file-image-o"></i></button>
+                                            <input type="hidden" disabled id="newNidUrl" value="{{ env('AKP_STORAGE') . '/seller_attachments/' . $infoChangeRequest->nid_url}}">
+                                            <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('nid_url')">
+                                            <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('nid_url')">
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <!-- TIN -->
+                                <div class="col-md-6">
+                                    <div class="form-group form-control-default">
+                                        <!-- LABEL -->
+                                        <label for="tinUrl">TIN Certificate</label>
+
+                                        <!-- CURRENT VALUE & PREVIEW -->
+                                        <input type="hidden" disabled id="tinUrl" value="{{ env('AKP_STORAGE') . '/seller_attachments/' . $vendor->tin_certificate_url}}">
+                                        <button class="btn btn-info" type="button" onclick="showPreview('TIN','tinUrl')">View TIN <i class="fa fa-file-image-o"></i></button>
+
+                                        <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                        @if($infoChangeRequest && $infoChangeRequest->tin_certificate_url !== NULL)
+                                            <button class="btn btn-warning" type="button" onclick="showPreview('NID','newTinUrl')">Pending Change <i class="fa fa-file-image-o"></i></button>
+                                            <input type="hidden" disabled id="newTinUrl" value="{{ env('AKP_STORAGE') . '/seller_attachments/' . $infoChangeRequest->tin_certificate_url}}">
+                                            <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('tin_certificate_url')">
+                                            <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('tin_certificate_url')">
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <!-- GST -->
+                                <div class="col-md-6">
+                                    <div class="form-group form-control-default">
+                                        <!-- LABEL -->
+                                        <label for="gstUrl">GST</label>
+
+                                        <!-- CURRENT VALUE & PREVIEW -->
+                                        <input type="hidden" disabled id="gstUrl" value="{{ env('AKP_STORAGE') . '/seller_attachments/' . $vendor->gst_url}}">
+                                        @if($vendor->gst_url)
+                                            <button class="btn btn-info" type="button" onclick="showPreview('GST','gstUrl')">View TIN <i class="fa fa-file-image-o"></i></button>
+                                        @else
+                                            <button class="btn btn-info" type="button" disabled>NA <i class="fa fa-file-image-o"></i></button>
+                                        @endif
+
+                                        <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                        @if($infoChangeRequest && $infoChangeRequest->gst_url !== NULL)
+                                            <button class="btn btn-warning" type="button" onclick="showPreview('NID','newGstUrl')">Pending Change <i class="fa fa-file-image-o"></i></button>
+                                            <input type="hidden" disabled id="newGstUrl" value="{{ env('AKP_STORAGE') . '/seller_attachments/' . $infoChangeRequest->gst_url}}">
+                                            <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('gst_url')">
+                                            <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('gst_url')">
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <!-- TRADE LICENSE -->
+                                <div class="col-md-6">
+                                    <div class="form-group form-control-default">
+                                        <!-- LABEL -->
+                                        <label for="trdUrl">Trade License</label>
+
+                                        <!-- CURRENT VALUE & PREVIEW -->
+                                        <input type="hidden" disabled id="trdUrl" value="{{ env('AKP_STORAGE') . '/seller_attachments/' . $vendor->trade_license_url}}">
+                                        @if($vendor->trade_license_url)
+                                            <button class="btn btn-info" type="button" onclick="showPreview('Trade License','trdUrl')">View Trade-License <i class="fa fa-file-image-o"></i></button>
+                                        @else
+                                            <button class="btn btn-info" type="button" disabled>NA <i class="fa fa-file-image-o"></i></button>
+                                        @endif
+
+                                        <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                        @if($infoChangeRequest && $infoChangeRequest->trade_license_url !== NULL)
+                                            <button class="btn btn-warning" type="button" onclick="showPreview('NID','newGstUrl')">Pending Change <i class="fa fa-file-image-o"></i></button>
+                                            <input type="hidden" disabled id="newGstUrl" value="{{ env('AKP_STORAGE') . '/seller_attachments/' . $infoChangeRequest->trade_license_url}}">
+                                            <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('trade_license_url')">
+                                            <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('trade_license_url')">
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <!-- CHEQUE -->
+                                <div class="col-md-6">
+                                    <div class="form-group form-control-default">
+                                        <!-- LABEL -->
+                                        <label for="chequeUrl">Cheque</label>
+
+                                        <!-- CURRENT VALUE & PREVIEW -->
+                                        <input type="hidden" disabled id="chequeUrl" value="{{ env('AKP_STORAGE') . '/seller_attachments/' . $vendor->bank_check_url}}">
+                                        @if($vendor->bank_check_url)
+                                            <button class="btn btn-info" type="button" onclick="showPreview('Cheque','chequeUrl')">View Cheque <i class="fa fa-file-image-o"></i></button>
+                                        @else
+                                            <a href="javascript:void(0);"> NA </a>
+                                            <button class="btn btn-info" type="button" disabled>NA <i class="fa fa-file-image-o"></i></button>
+                                        @endif
+
+                                        <!-- SHOW PENDING CHANGE REQUEST IF ANY -->
+                                        @if($infoChangeRequest && $infoChangeRequest->bank_check_url !== NULL)
+                                            <button class="btn btn-warning" type="button" onclick="showPreview('NID','newGstUrl')">Pending Change <i class="fa fa-file-image-o"></i></button>
+                                            <input type="hidden" disabled id="newGstUrl" value="{{ env('AKP_STORAGE') . '/seller_attachments/' . $infoChangeRequest->bank_check_url}}">
+                                            <input type="button" class="btn btn-success" value="Accept" onclick="acceptChange('bank_check_url')">
+                                            <input type="button" class="btn btn-danger" value="Decline" onclick="declineChange('bank_check_url')">
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- COMMISSION-RATE AND PROMOTER-CLUB-FEE -->
+                    <div class="row text-center" style="margin-bottom: 5px;">
+                        <h4 class="page-section-heading">Commission & Promoter Club Fee</h4>
+                    </div>  
+                    <!-- FORE EACH PRODUCT , RENDER COMMISION-RATE AND PROMOTER-CLUB-FEE INPUT BOX -->
+                    <table>
+                        <thead>
+                            <th>Category</th>
+                            <th>Commission Rate (%)</th>
+                            <th>Promoter Club Fee (%)</th>
+                            <th>Action</th>
+                        </thead>
+                        <tbody>
+                            @foreach($vendor->categories as $key => $catData)
+                            <tr>
+                                <td> {{ $catData->category->title }} @if($changeRequest = $vendor->catChangeRequests->where('old_cat',$catData->category_id)->where('status','pending')->first()) <span><font color="red"><b> PENDING CHANGE TO </b> </font>{{ $changeRequest->newCatDetails->title  }} </span> @endif </td>
+                                <td>                                
+                                    <input type="number" class="form-control" step="any" id="commission_rate_for_cat_{{ $catData->category->id }}" name="commission_rate_for_cat_{{ $catData->category_id }}" placeholder="Commission rate" value="{{ $vendor->commission()->where('category_id',$catData->category_id)->first()->commission_rate ?? 0 }}">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control" step="any" id="promoter_club_fee_for_cat_{{ $catData->category->id }}" name="promoter_club_fee_for_cat_{{ $catData->category_id }}" placeholder="Promoter club fee" value="{{ $vendor->commission()->where('category_id',$catData->category_id)->first()->promoter_club_fee ?? 0 }}">
+                                </td>
+                                <td>
+                                    @if($changeRequest = $vendor->catChangeRequests->where('old_cat',$catData->category_id)->where('status','pending')->first())
+                                        <button class="btn btn-success" type="button" onclick="approveCategoryChange( /*CHANGE REQUEST ID*/{{ $changeRequest->id}}, /*OLD CAT*/{{$changeRequest->old_cat}}, /*NEW CAT*/{{ $changeRequest->new_cat }} )">Approve</button>
+                                        <button class="btn btn-danger" type="button" onclick="declineCategoryChange(/*CHANGE REQUEST ID*/{{ $changeRequest->id}})">Decline</button>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+
+                    <!-- REQUESTED CATEGORIES -->
+                    @if($vendor->categoryRequests->where('status','pending')->isNotEmpty())
+                        <div class="row text-center" style="margin-bottom: 5px;">
+                            <h4 class="page-section-heading"><font color="blue">Pending Categories</font></h4>
+                        </div>
+                        <!-- FOR EACH PRODUCT , RENDER COMMISION-RATE AND PROMOTER-CLUB-FEE INPUT BOX -->
+                        <table>
+                            <thead>
+                                <th>Category</th>
+                                <th>Commission Rate (%)</th>
+                                <th>Promoter Club Fee (%)</th>
+                                <th>Action</th>
+                            </thead>
+                            <tbody>
+                                @foreach($vendor->categoryRequests->where('status','pending') as $key => $requestedCat)
+                                <tr>
+                                    <td> {{ $requestedCat->category->title }} </td>
+                                    <td>
+                                        <input type="number" class="form-control" step="any" id="commission_rate_for_cat_{{ $requestedCat->category_id }}" name="commission_rate_for_cat_{{ $requestedCat->category_id }}" placeholder="Commission rate">
+                                    </td>
+                                    <td>                                     
+                                        <input type="number" class="form-control" step="any" id="promoter_club_fee_for_cat_{{ $requestedCat->category_id }}" name="promoter_club_fee_for_cat_{{ $requestedCat->category_id }}" placeholder="Promoter club fee">
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-success" type="button" onclick="approveCategory({{ $requestedCat->id }}, {{ $requestedCat->seller_id }}, {{ $requestedCat->category_id }})">Approve</button>
+                                        <button class="btn btn-danger" type="button" onclick="declineCategory({{ $requestedCat->id }})">Decline</button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table> 
+                    @endif
+                </div>
+                
+
+                <!-- CONTROLS -->
+                <div class="row text-center" style="padding-top: 50px;">
+                    <button type="submit" class="btn btn-primary">Update</button>
+                    <a type="button" class="btn btn-default" href="{{ url()->previous() }}">Back</a>
+                    <a type="button" class="btn btn-warning" href="{{ route('change-log',['vendorId' => $vendor->id] ) }}">Change Log</a>
+                    <button type="button" onclick="printDetails()" class="btn btn-info">Print</button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection
+
+@section('scripts')
+<script>
+    //ON PAGE LOAD
+    $(document).ready( function(){
+        //SET CITY DROPDOWN
+        setCityDropdown();    
+    });
+
+    //WHEN COUNTRY IS CHANGED, UPDATE DATA PROVIDER FOR CITY DROPDOWN
+    $("#country").on("change", function (e) {
+        let countryId = $(this).select2('data').id;
+        setCityDropdown(countryId);
+    });
+
+    //THIS FUNCTION SETS DATA PROVIDER FOR CITY DROPDOWN AND SETS SELECTED VALUE
+    function setCityDropdown(countryId = null){
+        let ajaxUrl;
+        if(countryId === null)
+        {
+            ajaxUrl = "{{ route('cities-for-country', ['countryId' => $vendor->country_id]) }}";
+            $.ajax({
+                type: "GET",
+                url: ajaxUrl,
+                success: function( data ) {
+                $("#city").select2({
+                    placeholder: 'Select city ..',
+                    allowClear: false,
+                    data: JSON.parse(data) ,
+                }).val("{{ $vendor->city_id }}").trigger('change');
+                }
+            });
+        }
+        else
+        {   
+            ajaxUrl = "{{ route('cities-for-country', ['countryId' => 'COUNTRY_ID']) }}";
+            ajaxUrl = ajaxUrl.replace("COUNTRY_ID",countryId);
+            $.ajax({
+                type: "GET",
+                url: ajaxUrl,
+                success: function( data ) {
+                $("#city").select2({
+                    placeholder: 'Select city ..',
+                    allowClear: false,
+                    data: JSON.parse(data) ,
+                }).trigger('change');
+                }
+            });     
+        }
+
+
+        
+    }
+
+    //FUNCTION TO PRINT VENDOR-DETAILS
+    function printDetails(){
+        $("#printable").printThis({
+            importStyle: true,
+            beforePrint: function(){
+                $('#nonPrintables').hide();
+            },
+            afterPrint: function(){
+                $('#nonPrintables').show();
+            }      
+        });
+    }
+
+    //FUNCTION TO PREVIEW ATTACHMENT FILES i.e: photo, nid, tin etc
+    function showPreview(title, contentUrlHolder){
+        //CHECK IF FILE IS PDF OR IMAGE
+        var fileUrl = $(`#${contentUrlHolder}`).val();
+        var extension = fileUrl.substr( (fileUrl.lastIndexOf('.') +1) );
+
+        //IF FILE IS PDF, OPEN IN NEW TAB
+        if(extension=="pdf" || extension=="PDF")
+        {
+            window.open($(`#${contentUrlHolder}`).val(), '_blank');
+        }
+        //IF IMAGE, OPEN IN MODAL PREVIEW
+        else
+        {
+            $.confirm({
+                title: `${title}`,
+                content: '' +
+                    '<div><img id="imageDisplay" style="border: solid 1px #ddd;\n' +
+                    '    margin-bottom: 10px;\n' +
+                    '    border-radius: 4px;" src="" alt=""></div>' +
+                    '',
+                animation: 'scale',
+                animationClose: 'top',
+                closeIcon: true,
+                backgroundDismiss: true, 
+                theme: 'material',
+                boxWidth: '85%',
+                useBootstrap: false,
+                buttons:[],
+                onContentReady: function(){
+                    $('#imageDisplay').attr('src', fileUrl);
+                }
+            });
+        }
+    }
+
+    function acceptChange(attributeName){
+        var waitPopUp;
+
+        $.ajax({
+            type: 'POST',
+            url: "{{ route('accept-profile-change') }}",
+            data: {
+                "_token": "{{ csrf_token() }}",
+                "attribute": attributeName,
+                "seller_id": $('#seller_id').val()
+            },
+            beforeSend: function(){
+                waitPopUp = $.alert({
+                    title: '',
+                    content: '<div class="text-center"><i class="fa fa-spinner fa-spin"></i></div>',
+                    buttons:{
+                        btnOk:{
+                            text: 'Ok',
+                            isHidden: true
+                        }
+                    },
+                    closeIcon: false,
+                });
+            },
+            success: function(data) {
+                if(data.status == 1)
+                {
+                    waitPopUp.close();
+                    location.reload();
+                }
+                else
+                {
+                    waitPopUp.setTitle('Error');
+                    waitPopUp.setIcon('fa fa-warning');
+                    waitPopUp.setContent('Something went wrong, please try again later');
+                    waitPopUp.setType('red');
+                    waitPopUp.buttons.btnOk.show();
+                }
+            },
+            error: function(event){
+                waitPopUp.setTitle('Error');
+                    waitPopUp.setIcon('fa fa-warning');
+                    waitPopUp.setContent('Api Error');
+                    waitPopUp.setType('red');
+                    waitPopUp.buttons.btnOk.show();
+            }
+        });
+    }
+
+    function declineChange(attributeName){
+        $.ajax({
+            type: 'POST',
+            url: "{{ route('decline-profile-change') }}",
+            data: {
+                "_token": "{{ csrf_token() }}",
+                "attribute": attributeName,
+                "seller_id": $('#seller_id').val()
+            },
+            beforeSend: function(){
+                waitPopUp = $.alert({
+                    title: '',
+                    content: '<div class="text-center"><i class="fa fa-spinner fa-spin"></i></div>',
+                    buttons:[],
+                    closeIcon: false,
+                });
+            },
+            success: function(data) {
+                if(data.status == 1)
+                {
+                    waitPopUp.close();
+                    location.reload();
+                }
+                else
+                {
+                    waitPopUp.setTitle('Error');
+                    waitPopUp.setIcon('fa fa-warning');
+                    waitPopUp.setContent('Something went wrong, please try again later');
+                    waitPopUp.setType('red');
+                }
+            },
+            error: function(event){
+                waitPopUp.setTitle('Error');
+                    waitPopUp.setIcon('fa fa-warning');
+                    waitPopUp.setContent('Api Error');
+                    waitPopUp.setType('red');
+            }
+        });
+    }
+
+
+    function approveCategory(requestId, sellerId, categoryId){
+        var commissionRate = $(`#commission_rate_for_cat_${categoryId}`).val();
+        var promoterClubFee = $(`#promoter_club_fee_for_cat_${categoryId}`).val();
+        var validRequest = true;
+
+        //VALIDATE COMMISSION RATE
+        if(!commissionRate)
+        {
+            validRequest = false;
+
+            $.alert({
+                type: 'red',
+                icon: 'fa fa-warning',
+                title: 'Warning',
+                content: '<div class="text-center">Please set commission rate for the category</div>',
+                buttons:[],
+                closeIcon: true,
+            });
+        }
+
+        //VALIDATE PROMOTER CLUB FEE
+        if(!promoterClubFee)
+        {
+            validRequest = false;
+
+            $.alert({
+                type: 'red',
+                icon: 'fa fa-warning',
+                title: 'Warning',
+                content: '<div class="text-center">Please set promoter club fee for the category</div>',
+                buttons:[],
+                closeIcon: true,
+            });
+        }
+
+        if(validRequest)
+        {
+            console.log(`Will approve ${categoryId}`);
+            console.log(`Commission Rate: ${commissionRate} Promoter Club Fee: ${promoterClubFee}`);
+
+            var waitPopUp;
+            $.ajax({
+                type: "GET",
+                url: "{{ route('approve-new-category') }}",
+                data: {'request_id': requestId, 'seller_id': sellerId, 'category_id': categoryId, 'commission_rate': commissionRate, 'promoter_club_fee': promoterClubFee},
+                method: 'POST',
+                beforeSend: function(){
+                    waitPopUp = $.alert({
+                        title: '',
+                        content: '<div class="text-center"><i class="fa fa-spinner fa-spin"></i></div>',
+                        buttons:[],
+                        closeIcon: false,
+                    });
+                },
+                success: function( data ) {
+                    console.log(data);
+                    if(data.status == 1)
+                    {
+                        waitPopUp.close();
+                        location.reload();
+                    }
+                    else
+                    {
+                        waitPopUp.close();
+                        $.alert({title:'Warning',content:'Something went wrong, please try again later',icon: 'fa fa-warning',type:'red'});
+                    }
+                },
+                error: function(data){
+                    waitPopUp.close();
+                    $.alert({title:'Warning',content:'Something went wrong, please try again later',icon: 'fa fa-warning',type:'red'});
+                }
+            }); 
+        }
+    }
+
+    function declineCategory(requestId, sellerId, categoryId){
+        var waitPopUp;
+        $.ajax({
+            type: "GET",
+            url: "{{ route('decline-new-category') }}",
+            data: {'request_id': requestId, 'seller_id': sellerId, 'category_id': categoryId},
+            method: 'POST',
+            beforeSend: function(){
+                waitPopUp = $.alert({
+                    title: '',
+                    content: '<div class="text-center"><i class="fa fa-spinner fa-spin"></i></div>',
+                    buttons:[],
+                    closeIcon: false,
+                });
+            },
+            success: function( data ) {
+                console.log(data);
+                if(data.status == 1)
+                {
+                    waitPopUp.close();
+                    location.reload();
+                }
+                else
+                {
+                    waitPopUp.close();
+                    $.alert({title:'Warning',content:'Something went wrong, please try again later',icon: 'fa fa-warning',type:'red'});
+                }
+            },
+            error: function(data){
+                waitPopUp.close();
+                $.alert({title:'Warning',content:'Something went wrong, please try again later',icon: 'fa fa-warning',type:'red'});
+            }
+        }); 
+    }
+
+
+    function approveCategoryChange(requestId, oldCat, newCat){
+        console.log(`Approving request #:${requestId} replacing ${oldCat} with ${newCat}`);
+
+        var waitPopUp;
+        $.ajax({
+            type: "GET",
+            url: "{{ route('approve-category-change') }}",
+            data: {'request_id': requestId, 'old_cat': oldCat, 'new_cat': newCat, 'seller_id': $('#seller_id').val()},
+            method: 'POST',
+            beforeSend: function(){
+                waitPopUp = $.alert({
+                    title: '',
+                    content: '<div class="text-center"><i class="fa fa-spinner fa-spin"></i></div>',
+                    buttons:[],
+                    closeIcon: false,
+                });
+            },
+            success: function( data ) {
+                console.log(data);
+                if(data.status == 1)
+                {
+                    waitPopUp.close();
+                    location.reload();
+                }
+                else
+                {
+                    waitPopUp.close();
+                    $.alert({title:'Warning',content:'Something went wrong, please try again later',icon: 'fa fa-warning',type:'red'});
+                }
+            },
+            error: function(data){
+                waitPopUp.close();
+                $.alert({title:'Warning',content:'Something went wrong, please try again later',icon: 'fa fa-warning',type:'red'});
+            }
+        });
+    }
+
+    function declineCategoryChange(requestId, oldCat, newCat){
+        console.log(`Declining request #:${requestId}`);
+
+        var waitPopUp;
+        $.ajax({
+            type: "GET",
+            url: "{{ route('decline-category-change') }}",
+            data: {'request_id': requestId},
+            method: 'POST',
+            beforeSend: function(){
+                waitPopUp = $.alert({
+                    title: '',
+                    content: '<div class="text-center"><i class="fa fa-spinner fa-spin"></i></div>',
+                    buttons:[],
+                    closeIcon: false,
+                });
+            },
+            success: function( data ) {
+                console.log(data);
+                if(data.status == 1)
+                {
+                    waitPopUp.close();
+                    location.reload();
+                }
+                else
+                {
+                    waitPopUp.close();
+                    $.alert({title:'Warning',content:'Something went wrong, please try again later',icon: 'fa fa-warning',type:'red'});
+                }
+            },
+            error: function(data){
+                waitPopUp.close();
+                $.alert({title:'Warning',content:'Something went wrong, please try again later',icon: 'fa fa-warning',type:'red'});
+            }
+        });
+    }
+</script>
+@endsection

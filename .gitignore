@@ -1,0 +1,46 @@
+# Laravel & PHP related
+/vendor/
+/node_modules/
+.env
+.env.*.php
+.phpunit.result.cache
+npm-debug.log
+yarn-error.log
+/public/storage
+/storage/*.key
+/storage/app/public
+/storage/framework/cache/data
+/storage/framework/sessions
+/storage/framework/views
+/storage/logs
+
+# Composer & Laravel auto-generated
+composer.lock
+composer.phar
+# artisan
+# server.php
+
+# IDEs & editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Zip files
+*.zip
+
+# Cache
+# bootstrap/cache/*.php
+
+# Laravel Telescope
+storage/telescope
+
+# Laravel Horizon
+horizon.log
