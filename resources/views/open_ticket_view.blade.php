@@ -32,23 +32,23 @@
                                             Open</option>
                                             <option value="closed">
                                                 Closed</option>
-                                                <option value="processing">
-                                                    Processing</option>
+                                                <option value="answered">
+                                                    Answered</option>
                                     @elseif ($openTicketId->status == 'closed')
                                     <option value="open">
                                         Open</option>
                                         <option value="closed" selected>
                                             Closed</option>
-                                            <option value="processing">
-                                                Processing</option>
-                                    @elseif ($openTicketId->status == 'processing')
+                                            <option value="answered">
+                                                Answered</option>
+                                    @elseif ($openTicketId->status == 'answered')
 
                                     <option value="open">
                                         Open</option>
                                         <option value="closed">
                                             Closed</option>
-                                            <option value="processing" selected>
-                                                Processing</option>
+                                            <option value="answered" selected>
+                                                Answered</option>
                                     @endif
                                     {{-- @endforeach --}}
 
@@ -63,7 +63,7 @@
                                     <option value="assign">
                                         Assign Vendor</option>
                                     @foreach ($allVendor as $seller)
-                                        <option value="{{$seller->id}}"@if ($seller->id == $openTicketId->assign_vendor->vendor)
+                                        <option value="{{$seller?->id}}"@if ($seller?->id == $openTicketId?->assign_vendor?->vendor)
                                             selected
                                         @endif>
                                             {{$seller->name}}

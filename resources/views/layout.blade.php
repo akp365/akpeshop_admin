@@ -107,7 +107,7 @@
                                 --}}
 
                                 <!-- SETTINGS -->
-                                
+
 
                                 <!-- DASHBOARD -->
                                 <ul class="sidebar-menu sm-icons-right sm-icons-block">
@@ -116,10 +116,13 @@
                                 <ul class="sidebar-menu sm-icons-right sm-icons-block">
                                     <li class="{{ Route::currentRouteName() == 'ticket ' ? 'active' : ''}}"><a href="{{ route('open_ticket') }}"><span>Open Tickets</span></a></li>
                                 </ul>
+                                <ul class="sidebar-menu sm-icons-right sm-icons-block">
+                                    <li class="{{ Route::currentRouteName() == 'gift-balance.index' ? 'active' : ''}}"><a href="{{ route('gift-balance.index') }}"><span>Gift Balance</span></a></li>
+                                </ul>
 
                                 <!-- LOOKS -->
                                 <ul class="sidebar-menu sm-icons-right sm-icons-block">
-                                    <li class="{{ Route::currentRouteName() == 'looks' ? 'active' : ''}}"><a href="{{ route('looks') }}"><i class="fa fa-cog"></i> <span>Looks</span></a></li>
+                                    <li class="{{ Route::currentRouteName() == 'gift' ? 'active' : ''}}"><a href="{{ route('looks') }}"><i class="fa fa-cog"></i> <span>Looks</span></a></li>
                                 </ul>
 
                                 <ul class="sidebar-menu sm-icons-right sm-icons-block">

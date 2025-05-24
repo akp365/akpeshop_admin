@@ -10,6 +10,7 @@ use App\Models\UpdateOrder;
 use Facade\FlareClient\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\GiftBalanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,9 +56,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post("/send-message", [AdminController::class, 'SendTicketMessage'])->name('SendTicketMessage');
     Route::post("/assign-ticket", [AdminController::class, 'AssignTicket'])->name('AssignTicket');
 
+    Route::get('/gift-balance', [GiftBalanceController::class, 'index'])->name('gift-balance.index');
+    Route::post('/gift-balance', [GiftBalanceController::class, 'store'])->name('gift-balance.store');
+    Route::get('/search/customers', [GiftBalanceController::class, 'searchCustomers'])->name('search.customers');
+    Route::get('/initial/customers', [GiftBalanceController::class, 'getInitialCustomers'])->name('initial.customers');
+
     //SETTINGS
     Route::get('settings', [App\Http\Controllers\SettingsController::class, 'index'])->name('settings');
-    Route::post('save_default_currency', [App\Http\Controllers\SettingsController::class, 'saveDefaultCurrency'])->name('save_default_currency');   
+    Route::post('save_default_currency', [App\Http\Controllers\SettingsController::class, 'saveDefaultCurrency'])->name('save_default_currency');
     Route::post('set_cod', [App\Http\Controllers\SettingsController::class, 'set_cod'])->name('set_cod');
 
 

@@ -21,26 +21,33 @@ use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
+
+    public function GiftBalance() {
+        return view('gift_balance');
+    }
+
+
+
     public function AssignTicket(Request $request) {
         $ticketId = $request->ticket_id;
         $vendorId = $request->vendor_id;
         $status = $request->status;
-    
+
         $ticket = OpenTicket::find($ticketId);
         if ($ticket) {
             $ticket->update([
                 'status' => $status
             ]);
         }
-    
+
         AssignTicket::create([
             'ticket_id' => $ticketId,
             'vendor' => $vendorId,
         ]);
-    
+
         return back();
     }
-    
+
 
     public function SendTicketMessage(Request $request) {
         $ticket_id = $request->ticket_id;
@@ -60,9 +67,9 @@ class AdminController extends Controller
     public function OpenTicketView(Request $request) {
         $unique_id = $request->ticket_unique_id;
         $openTicketId = OpenTicket::with('assign_vendor')->where("unique_id", $unique_id)->first();
-    
+
         $user = Auth::user();
-    
+
         $openTicket = OpenTicketMessage::where('ticket_id', $openTicketId->id)->get();
 
 
@@ -419,7 +426,7 @@ class AdminController extends Controller
         $adminCurrency = SiteSetting::latest()->first();
         // return $this->convertCurrency($adminCurrency->value, )
 
-        
+
         // Pass the necessary data to the view
         return view('dashboard', compact('ordersWithDetails', 'monthlyEarnings', 'all_orders', 'total_customers', 'total_seller', 'recent_orders', 'vendor_names', 'vendor_totals', 'adminTotalSells', 'totalProduct'));
 
