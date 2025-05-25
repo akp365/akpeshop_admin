@@ -205,7 +205,7 @@
     <div class="container gift-balance-container">
         <div class="card">
             <div class="card-header">
-                <h4 class="mb-0 text-light" style="color: white;">Add Gift Balance</h4>
+                <h4 class="mb-0 text-light" style="color: white;">Add Gift Balancea</h4>
             </div>
 
             <div class="card-body">
@@ -333,7 +333,7 @@
                                             </a>
                                             <form action="{{ route('gift-balance.destroy', $balance->id) }}"
                                                   method="POST"
-                                                  style="display: inline-block;"
+                                                  style="display: inline-block; margin-left: 10px;"
                                                   onsubmit="return confirm('Are you sure you want to delete this gift balance?');">
                                                 @csrf
                                                 @method('DELETE')
