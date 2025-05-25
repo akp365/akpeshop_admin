@@ -165,6 +165,7 @@
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
+                                
                             </thead>
                             <tbody id="giftBalanceRows">
                                 <tr>
