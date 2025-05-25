@@ -97,7 +97,7 @@
                         <div class="card text-white bg-danger mb-3" style="border-radius: 5px;">
                             <div class="card-body"
                                 style="padding: 10px; display: flex; flex-direction: column; justify-content: center;align-items:center; border-radius: 5px;">
-                                <h5 class="card-title" style="color: white; font-size: 20px;">Total Vendors</h5>
+                                <h5 class="card-title" style="color: white; font-size: 20px;">Total Vendossssrs</h5>
                                 <p class="card-text" style="color: white;font-size: 25px;">{{$total_seller}}</p>
                             </div>
                         </div>
