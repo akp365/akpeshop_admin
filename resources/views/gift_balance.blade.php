@@ -205,7 +205,7 @@
     <div class="container gift-balance-container">
         <div class="card">
             <div class="card-header">
-                <h4 class="mb-0 text-light" style="color: white;">Add Gift Balancea</h4>
+                <h4 class="mb-0 text-light" style="color: white;">Add Gift Balance</h4>
             </div>
 
             <div class="card-body">
