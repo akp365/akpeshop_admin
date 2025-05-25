@@ -58,7 +58,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/gift-balance', [GiftBalanceController::class, 'index'])->name('gift-balance.index');
     Route::post('/gift-balance', [GiftBalanceController::class, 'store'])->name('gift-balance.store');
-    Route::get('/search/customers', [GiftBalanceController::class, 'searchCustomers'])->name('search.customers');
+    Route::get('/search-customers', [GiftBalanceController::class, 'searchCustomers'])->name('search.customers');
     Route::get('/initial/customers', [GiftBalanceController::class, 'getInitialCustomers'])->name('initial.customers');
 
     //SETTINGS
@@ -288,3 +288,6 @@ Route::get('orders/more-info-public', [App\Http\Controllers\OrderController::cla
 
 Route::get('/get-total-sells',[AdminController::class,'get_total_sells'])->name('get_total_sells');
 Route::get('/get-total-sells-by-currency',[VendorController::class,'get_total_sells_by_currency'])->name('get_total_sells_by_currency');
+
+Route::resource('gift-balance', GiftBalanceController::class);
+Route::get('search-customers', [GiftBalanceController::class, 'searchCustomers'])->name('search.customers');

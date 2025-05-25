@@ -2,25 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\GiftBalance;
 use App\Models\Currency;
 use App\Models\Customer;
+use App\Models\GiftBalance;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class GiftBalanceController extends Controller
 {
     public function index()
     {
-        $currencies = Currency::where('status', 'active')
-                            ->orderBy('title')
-                            ->get();
-        $giftBalances = GiftBalance::with(['customer', 'currency'])->latest()->get();
-
-        // Debug information
-        Log::info('Currencies count: ' . $currencies->count());
-        Log::info('Gift Balances count: ' . $giftBalances->count());
+        $currencies = Currency::all();
+        $giftBalances = GiftBalance::with(['customer', 'currency'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('gift_balance', compact('currencies', 'giftBalances'));
     }
@@ -29,80 +24,108 @@ class GiftBalanceController extends Controller
     {
         $request->validate([
             'customer_email' => 'required|array',
-            'customer_email.*' => 'required|email|exists:customers,email',
+            'customer_email.*' => 'required|exists:customers,id',
             'description' => 'required|array',
             'description.*' => 'required|string',
             'currency_id' => 'required|array',
             'currency_id.*' => 'required|exists:currencies,id',
             'amount' => 'required|array',
-            'amount.*' => 'required|numeric|min:0',
+            'amount.*' => 'required|numeric|min:0.01',
             'status' => 'required|array',
             'status.*' => 'required|in:gift_voucher,bonus,refund'
         ]);
 
-        foreach ($request->customer_email as $index => $email) {
-            $customer = Customer::where('email', $email)->first();
+        DB::beginTransaction();
 
-            if ($customer) {
+        try {
+            foreach ($request->customer_email as $key => $customerId) {
                 GiftBalance::create([
-                    'user_id' => $customer->id,
-                    'description' => $request->description[$index],
-                    'currency_id' => $request->currency_id[$index],
-                    'in' => $request->amount[$index],
-                    'status' => $request->status[$index],
-                    'added_cost_by' => Auth::id()
+                    'customer_id' => $customerId,
+                    'description' => $request->description[$key],
+                    'currency_id' => $request->currency_id[$key],
+                    'in' => $request->amount[$key],
+                    'out' => 0,
+                    'status' => $request->status[$key]
                 ]);
             }
-        }
 
-        return redirect()->back()->with('success', 'Gift balances added successfully');
+            DB::commit();
+            return redirect()->back()->with('success', 'Gift balances added successfully!');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()->with('error', 'Failed to add gift balances. Please try again.');
+        }
+    }
+
+    public function edit($id)
+    {
+        $giftBalance = GiftBalance::with(['customer', 'currency'])->findOrFail($id);
+        $currencies = Currency::all();
+
+        return view('gift_balance_edit', compact('giftBalance', 'currencies'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'customer_id' => 'required|exists:customers,id',
+            'description' => 'required|string',
+            'currency_id' => 'required|exists:currencies,id',
+            'amount' => 'required|numeric|min:0.01',
+            'status' => 'required|in:gift_voucher,bonus,refund'
+        ]);
+
+        $giftBalance = GiftBalance::findOrFail($id);
+
+        try {
+            $giftBalance->update([
+                'customer_id' => $request->customer_id,
+                'description' => $request->description,
+                'currency_id' => $request->currency_id,
+                'in' => $request->amount,
+                'status' => $request->status
+            ]);
+
+            return redirect()->route('gift-balance.index')->with('success', 'Gift balance updated successfully!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update gift balance. Please try again.');
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $giftBalance = GiftBalance::findOrFail($id);
+            $giftBalance->delete();
+
+            return redirect()->route('gift-balance.index')->with('success', 'Gift balance deleted successfully!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to delete gift balance. Please try again.');
+        }
     }
 
     public function searchCustomers(Request $request)
     {
         $search = $request->get('q');
-        $page = $request->get('page', 1);
-        $perPage = 30;
 
         $customers = Customer::where(function($query) use ($search) {
             $query->where('email', 'LIKE', "%{$search}%")
-                  ->orWhere('name', 'LIKE', "%{$search}%")
-                  ->orWhere('phone', 'LIKE', "%{$search}%");
+                  ->orWhere('phone', 'LIKE', "%{$search}%")
+                  ->orWhere('name', 'LIKE', "%{$search}%");
         })
-        ->select('id', 'email', 'name', 'phone')
-        ->orderBy('email')
-        ->paginate($perPage);
+        ->limit(10)
+        ->get();
 
-        // Debug information
-        Log::info('Customer search query: ' . $search);
-        Log::info('Customers found: ' . $customers->count());
-
-        return response()->json([
-            'items' => $customers->map(function($customer) {
-                return [
-                    'id' => $customer->email,
-                    'text' => $customer->email . ' - ' . $customer->name . ' (' . $customer->phone . ')'
-                ];
-            }),
-            'total_count' => $customers->total()
-        ]);
-    }
-
-    // Helper method to get initial customers for preloading
-    public function getInitialCustomers()
-    {
-        $customers = Customer::select('id', 'email', 'name', 'phone')
-            ->orderBy('email')
-            ->limit(100)
-            ->get();
+        $formattedCustomers = $customers->map(function($customer) {
+            return [
+                'id' => $customer->id,
+                'text' => "{$customer->name} ({$customer->email}) - {$customer->phone}"
+            ];
+        });
 
         return response()->json([
-            'items' => $customers->map(function($customer) {
-                return [
-                    'id' => $customer->email,
-                    'text' => $customer->email . ' - ' . $customer->name . ' (' . $customer->phone . ')'
-                ];
-            })
+            'items' => $formattedCustomers,
+            'total_count' => $customers->count()
         ]);
     }
 }
