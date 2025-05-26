@@ -117,6 +117,9 @@
                                     <li class="{{ Route::currentRouteName() == 'ticket ' ? 'active' : ''}}"><a href="{{ route('open_ticket') }}"><span>Open Tickets</span></a></li>
                                 </ul>
                                 <ul class="sidebar-menu sm-icons-right sm-icons-block">
+                                    <li class="{{ Route::currentRouteName() == 'reward-points' ? 'active' : ''}}"><a href="{{ route('reward_points') }}"><span>Reward Points</span></a></li>
+                                </ul>
+                                <ul class="sidebar-menu sm-icons-right sm-icons-block">
                                     <li class="{{ Route::currentRouteName() == 'gift-balance.index' ? 'active' : ''}}"><a href="{{ route('gift-balance.index') }}"><span>Gift Balance</span></a></li>
                                 </ul>
 

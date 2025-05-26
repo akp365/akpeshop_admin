@@ -132,7 +132,7 @@
                     </div>
 
                     <div class="btn-container">
-                        <a href="{{ route('gift-balance.index') }}" class="btn btn-secondary">
+                        <a href="{{ route('gift-balance.index') }}" class="btn btn-primary">
                             Cancel
                         </a>
                         <button type="submit" class="btn btn-success" style="background: green;">

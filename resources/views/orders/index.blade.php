@@ -144,7 +144,7 @@
                             </div>
                             <br>
 
-                         
+
                             <div style="display: flex;">
                                 <label for="allSellers" style="margin-right: 5px;">Currency:</label>
                                 <select id="allSellers" style="width: 100%; margin-left: 23px;;" name="ordered_currency">
@@ -170,6 +170,7 @@
                                 <option value="Confirmed" {{ request()->query('order_status') == "Confirmed" ? "selected" : '' }}>Confirmed</option>
                                 <option value="Dispatched" {{ request()->query('order_status') == "Dispatched" ? "selected" : '' }}>Dispatched</option>
                                 <option value="Delivered" {{ request()->query('order_status') == "Delivered" ? "selected" : '' }}>Delivered</option>
+                                <option value="Completed" {{ request()->query('order_status') == "Completed" ? "selected" : '' }}>Completed</option>
                                 <option value="Returned" {{ request()->query('order_status') == "Returned" ? "selected" : '' }}>Returned</option>
                             </select>
                             </div>
@@ -302,6 +303,7 @@
                             <option value="Confirmed">Confirmed</option>
                             <option value="Dispatched">Dispatched</option>
                             <option value="Delivered">Delivered</option>
+                            <option value="Completed">Completed</option>
                             <option value="Returned">Returned</option>
                         </select>
 
@@ -414,7 +416,7 @@
             if (lastTrackingItem) {
                 const statusCircle = lastTrackingItem.querySelector(".status-circle");
                 if (statusCircle) {
-                    statusCircle.style.backgroundColor = "#f86c47"; // Set circle color to orange
+                    statusCircle.style.backgroundColor = "#f86c47";
                 }
             }
         }

@@ -35,7 +35,7 @@ class OrderController extends Controller
         $allWithdraw = WithdrawBalance::where('seller_id', $sellerId)->latest()->get();
 
 
-        
+
         $orders = Order::with('checkout')->where('seller_id', $sellerId)
             ->latest();
 
@@ -804,6 +804,7 @@ class OrderController extends Controller
 
 
                 // return $orderDetails;
+                $current_currency = Currency::where('title', $order->currency)->latest()->first();
 
                 $order->total_invoice_value = 0;
                 $order->total_tax = 0;
@@ -872,9 +873,9 @@ class OrderController extends Controller
                 $order->total_discount = round($this->discountConverter($order->checkout->subtotal, $order->checkout->discount, $order->invoice_value), 2);
 
                 //   $order->total_discount = round($order->checkout->subtotal, $order->checkout->discount, $order->invoice_value));
-                $discountForOrder = round(($order->total_invoice_value / $subtotal_and_shipping_cost) * $order->discount, 2);
+                $discountForOrder = number_format(($order->total_invoice_value / $subtotal_and_shipping_cost) * $order->discount, 2);
                 $order->total_invoice_value -= $discountForOrder;
-                $order->final_invoice_value = ($order->invoice_value + $order->total_cod_fees + $order->seller_total_shipping_fee) - $order->total_discount;
+                $order->final_invoice_value = number_format((($order->invoice_value + $order->total_cod_fees + $order->seller_total_shipping_fee) - $order->total_discount) * $current_currency->usd_conversion_rate, 2, '.', '');
 
 
 

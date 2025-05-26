@@ -11,6 +11,7 @@ use Facade\FlareClient\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GiftBalanceController;
+use App\Http\Controllers\RewardPointController;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,6 +61,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/gift-balance', [GiftBalanceController::class, 'store'])->name('gift-balance.store');
     Route::get('/search-customers', [GiftBalanceController::class, 'searchCustomers'])->name('search.customers');
     Route::get('/initial/customers', [GiftBalanceController::class, 'getInitialCustomers'])->name('initial.customers');
+
+    // Add Reward Points route
+    Route::get('/reward-points', [RewardPointController::class, 'ShowRewardPointHistory'])->name('reward_points');
 
     //SETTINGS
     Route::get('settings', [App\Http\Controllers\SettingsController::class, 'index'])->name('settings');
@@ -291,3 +295,7 @@ Route::get('/get-total-sells-by-currency',[VendorController::class,'get_total_se
 
 Route::resource('gift-balance', GiftBalanceController::class);
 Route::get('search-customers', [GiftBalanceController::class, 'searchCustomers'])->name('search.customers');
+
+// Route::get('reward-points/all-users', [RewardPointController::class, 'allUsers'])->name('reward-points.all-users');
+
+
