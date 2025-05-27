@@ -70,7 +70,19 @@
 
                 <div
                     style="background-color: #f9f9f9; width:100%; padding: 15px; border-radius: 5px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+<style>
+            .date-filter-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: fit-content;
+            width: 100%;
+        }
 
+</style>
                     <div>
                         <form class="mt-5">
 
@@ -259,7 +271,7 @@
                     {
                         data: null,
                         name: 'admin_currency_earning',
-                        title: 'Currency Earning',
+                        title: 'Convert to',
                         render: function (data, type, row) {
                             return row.admin_currency_earning + ' ' + row.admin_currency_earning_currency;
                         }

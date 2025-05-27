@@ -372,11 +372,12 @@
                                 if (type === 'display') {
                                     const value = data.replace(/[^\d.-]/g, '');
                                     const currency = data.replace(/[\d.-]/g, '').trim();
+                                    const isPositive = !data.includes('-') && data.includes('+');
                                     const formattedValue = parseFloat(value).toLocaleString('en-US', {
                                         minimumFractionDigits: 2,
                                         maximumFractionDigits: 2
                                     });
-                                    return formattedValue + ' ' + currency;
+                                    return (isPositive ? '+' : '') + formattedValue + ' ' + currency.replace('+', '').trim();
                                 }
                                 return data;
                             }

@@ -28,7 +28,26 @@ use Yajra\DataTables\Facades\DataTables;
 
 class OrderController extends Controller
 {
+    private function checkAndUpdateOrderStatus($order)
+    {
+        if ($order->order_status === 'delivered') {
+            $deliveredTime = Carbon::parse($order->updated_at);
+            $currentTime = Carbon::now();
+            $hoursDifference = $currentTime->diffInHours($deliveredTime);
 
+            if ($hoursDifference >= 72) {
+                $order->order_status = 'completed';
+                $order->save();
+
+                $statusHistory = new OrderStatusHistory();
+                $statusHistory->order_id = $order->id;
+                $statusHistory->status = 'completed';
+                $statusHistory->note = 'Order automatically marked as completed after 72 hours of delivery';
+                $statusHistory->save();
+            }
+        }
+        return $order;
+    }
 
     public function SellerEarnings(Request $request) {
         $sellerId = $request->query('seller_id');
@@ -780,6 +799,9 @@ class OrderController extends Controller
             }
 
             $orders = $orders->get()->map(function ($order) {
+                // Check and update status if needed
+                $order = $this->checkAndUpdateOrderStatus($order);
+
                 $order->dubai_date_time = Carbon::parse($order->created_at)
                     ->timezone('Asia/Dubai')
                     ->format('d/m/Y , H:i');
@@ -1128,6 +1150,9 @@ class OrderController extends Controller
             }
 
             $orders = $orders->get()->map(function ($order) {
+                // Check and update status if needed
+                $order = $this->checkAndUpdateOrderStatus($order);
+
                 $order->dubai_date_time = Carbon::parse($order->created_at)
                     ->timezone('Asia/Dubai')
                     ->format('d/m/Y , H:i');
@@ -1363,7 +1388,10 @@ class OrderController extends Controller
             $sellerId = $request->query('seller');
             $order = Order::where('id', $orderId)->where('seller_id', $sellerId)->latest()->first();
 
-
+            // Check and update status if needed
+            if ($order) {
+                $order = $this->checkAndUpdateOrderStatus($order);
+            }
 
             $orderDetails = OrderDetails::with([
                 'product_details' => function ($query) {
@@ -1433,7 +1461,10 @@ class OrderController extends Controller
                 $sellerId = $request->query('seller');
                 $order = Order::where('id', $orderId)->where('seller_id', $sellerId)->latest()->first();
 
-
+                // Check and update status if needed
+                if ($order) {
+                    $order = $this->checkAndUpdateOrderStatus($order);
+                }
 
                 $orderDetails = OrderDetails::with([
                     'product_details' => function ($query) {
@@ -1778,6 +1809,9 @@ class OrderController extends Controller
             }
 
             $orders = $orders->get()->map(function ($order) {
+                // Check and update status if needed
+                $order = $this->checkAndUpdateOrderStatus($order);
+
                 $order->dubai_date_time = Carbon::parse($order->created_at)
                     ->timezone('Asia/Dubai')
                     ->format('d/m/Y , H:i');
@@ -2026,6 +2060,9 @@ class OrderController extends Controller
             }
 
             $orders = $orders->get()->map(function ($order) {
+                // Check and update status if needed
+                $order = $this->checkAndUpdateOrderStatus($order);
+
                 $order->dubai_date_time = Carbon::parse($order->created_at)
                     ->timezone('Asia/Dubai')
                     ->format('d/m/Y , H:i');

@@ -14,7 +14,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        Commands\UpdateDeliveredOrders::class,
     ];
 
     /**
@@ -41,6 +41,9 @@ class Kernel extends ConsoleKernel
                 ->where('expiration_date', '<=', date("Y-m-d"))
                 ->update(['status' => 'expired']);
         })->daily();
+
+        // Run the command every hour to check for orders that need to be updated
+        $schedule->command('orders:update-delivered')->hourly();
     }
 
     /**
