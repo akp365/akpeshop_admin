@@ -30,19 +30,19 @@ class OrderController extends Controller
 {
     private function checkAndUpdateOrderStatus($order)
     {
-        if ($order->order_status === 'delivered') {
+        if ($order->order_status === 'Delivered') {
             $deliveredTime = Carbon::parse($order->updated_at);
             $currentTime = Carbon::now();
-            $hoursDifference = $currentTime->diffInHours($deliveredTime);
+            $minutesDifference = $currentTime->diffInMinutes($deliveredTime);
 
-            if ($hoursDifference >= 72) {
-                $order->order_status = 'completed';
+            if ($minutesDifference >= 10) {
+                $order->order_status = 'Completed';
                 $order->save();
 
                 $statusHistory = new OrderStatusHistory();
                 $statusHistory->order_id = $order->id;
-                $statusHistory->status = 'completed';
-                $statusHistory->note = 'Order automatically marked as completed after 72 hours of delivery';
+                $statusHistory->order_status = 'Completed';
+                $statusHistory->note = 'Order automatically marked as completed after 5 seconds of delivery';
                 $statusHistory->save();
             }
         }
