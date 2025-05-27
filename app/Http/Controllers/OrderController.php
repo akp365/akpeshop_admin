@@ -1652,6 +1652,9 @@ class OrderController extends Controller
             if ($status == 'delivered') {
                 $orderStatus = 'Delivered';
             }
+            if ($status == 'completed') {
+                $orderStatus = 'Completed';
+            }
             if ($status == 'returned') {
                 $orderStatus = 'Returned';
             }
