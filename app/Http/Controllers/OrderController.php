@@ -35,14 +35,27 @@ class OrderController extends Controller
             $currentTime = Carbon::now();
             $minutesDifference = $currentTime->diffInMinutes($deliveredTime);
 
-            if ($minutesDifference >= 10) {
+            if ($minutesDifference >= 1) {
+                // Update Order status
                 $order->order_status = 'Completed';
                 $order->save();
 
+                // Update CheckoutItem status
+                $checkoutItems = CheckoutItem::where('checkout_id', $order->order_details_checkout_id)
+                    ->where('seller_id', $order->seller_id)
+                    ->get();
+
+                foreach ($checkoutItems as $item) {
+                    $item->order_status = 'Completed';
+                    $item->save();
+                }
+
+                // Create status history
                 $statusHistory = new OrderStatusHistory();
                 $statusHistory->order_id = $order->id;
                 $statusHistory->order_status = 'Completed';
-                $statusHistory->note = 'Order automatically marked as completed after 5 seconds of delivery';
+                $statusHistory->status_name = 'Completed';
+                $statusHistory->note = 'Order automatically marked as completed after 1 minute of delivery';
                 $statusHistory->save();
             }
         }
