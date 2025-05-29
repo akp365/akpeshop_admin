@@ -374,18 +374,19 @@ class OrderController extends Controller
         }
 
         if ($shipping_weight >= 1 && $shipping_weight <= 1000) {
-            return number_format($shipping->shipping_fee_1_to_1000,2);
+            return $shipping->shipping_fee_1_to_1000;
         } elseif ($shipping_weight >= 1001 && $shipping_weight <= 3000) {
-            return number_format($shipping->shipping_fee_1001_to_3000,2);
+            return $shipping->shipping_fee_1001_to_3000;
         } elseif ($shipping_weight >= 3001 && $shipping_weight <= 5000) {
-            return number_format($shipping->shipping_fee_3001_to_5000,2);
+            return $shipping->shipping_fee_3001_to_5000;
         } elseif ($shipping_weight >= 5001 && $shipping_weight <= 10000) {
-            return number_format($shipping->shipping_fee_5001_to_10000,2);
+            return $shipping->shipping_fee_5001_to_10000;
         } elseif ($shipping_weight >= 10001 && $shipping_weight <= 15000) {
-            return number_format($shipping->shipping_fee_10001_to_15000,2);
+            return $shipping->shipping_fee_10001_to_15000;
         } elseif ($shipping_weight > 15000) {
-            return number_format($shipping->shipping_fee_above_15000,2);
+            return $shipping->shipping_fee_above_15000;
         } else {
+            // Handle invalid or out-of-range weights
             return null;
         }
     }
@@ -872,11 +873,9 @@ class OrderController extends Controller
                     }
 
 
-                    $total_price_without_vat_store = 0;
                     $order->total_price_with_vat += $detail->final_price * $current_currency->usd_conversion_rate;
-                    $total_price_without_vat_store += $detail->product_price * $current_currency->usd_conversion_rate;
-                    $order->total_price_without_vat = number_format($total_price_without_vat_store, 2, '.', '');
-                    // $order->total_price_without_vat += $detail->product_price * $current_currency->usd_conversion_rate;
+                    $order->total_price_without_vat += $detail->product_price * $current_currency->usd_conversion_rate;
+
 
 
 
@@ -889,24 +888,17 @@ class OrderController extends Controller
                     // $order->commision_details = $sellerCategoriesWiseCommision;
                     // $order->commisonFee = $order->total_price_without_vat * ($sellerCategoriesWiseCommision?->commission_rate / 100);
                     // $order->promoterClubFee = $order->total_price_without_vat * ($sellerCategoriesWiseCommision?->promoter_club_fee / 100);
-                    $commisonFeeStore = 0;
-                    $commisonFeeStore += $detail->commison * $current_currency->usd_conversion_rate;
-                    $order->commisonFee = number_format($commisonFeeStore, 2, '.', '');
-                    $promoterClubFeeStore = 0;
-                    $promoterClubFeeStore += $detail->promoter_fee * $current_currency->usd_conversion_rate;
-                    $order->promoterClubFee = number_format($promoterClubFeeStore, 2, '.', '');
+                    $order->commisonFee += round($detail->commison * $current_currency->usd_conversion_rate, 2);
+                    $order->promoterClubFee += round($detail->promoter_fee * $current_currency->usd_conversion_rate, 2);
 
-                    $vatOnFeeStore = 0;
-                    $vatOnFeeStore += $detail->vat_on_fee * $current_currency->usd_conversion_rate;
-                    $order->vatOnFee = number_format($vatOnFeeStore, 2, '.', '');
+                    $order->vatOnFee += round($detail->vat_on_fee * $current_currency->usd_conversion_rate, 2);
 
 
 
                 }
 
-                $seller_total_shipping_fee_store = 0;
-                $seller_total_shipping_fee_store += $this->getShippingFee($seller_id, $total_weight) * $current_currency->usd_conversion_rate;
-                $order->seller_total_shipping_fee = number_format($seller_total_shipping_fee_store, 2, '.', '');
+
+                $order->seller_total_shipping_fee += $this->getShippingFee($seller_id, $total_weight) * $current_currency->usd_conversion_rate;
                 $order->total_invoice_value += ($order->seller_total_shipping_fee);
                 $order->order_details = $orderDetails;
                 $codCharges = Checkout::find($order->order_details_checkout_id);
@@ -991,7 +983,7 @@ class OrderController extends Controller
 
 
 
-                $order->seller_payable_money = number_format($sellerPayablePrice, 2, '.', '');
+                $order->seller_payable_money = round($sellerPayablePrice, 2);
 
 
                 $subcidy = 0;
@@ -1009,12 +1001,12 @@ class OrderController extends Controller
                 $order->subcidy = round($subcidy, 2);
 
 
-                $order->earnings = number_format(($order->final_invoice_value) - ($order->seller_payable_money), 2, '.', '');
+                $order->earnings = round(($order->final_invoice_value) - ($order->seller_payable_money), 2);
 
                 $current_currency = SiteSetting::latest()->first();
                 $earningData = $this->convertCurrency($order->currency, $order->earnings, $current_currency->value);
 
-                $order->admin_currency_earning = number_format($earningData['converted_amount'], 2, '.', '');
+                $order->admin_currency_earning = $earningData['converted_amount'];
                 $order->admin_currency_earning_currency = $current_currency->value;
                 return $order;
             });
@@ -1043,10 +1035,10 @@ class OrderController extends Controller
                     return $row->total_price_with_vat . " " . $row->currency ?? 'N/A';
                 })
                 ->addColumn('vat_on_fee', function ($row) {
-                    return $row->vatOnFee;
+                    return round($row->vatOnFee, 2);
                 })
                 ->addColumn('seller_payable_amnt', function ($row) {
-                    return $row->seller_payable_money;
+                    return round($row->seller_payable_money, 2);
                 })
                 ->addColumn('order_details_btn', function ($row) {
                     return "<a href='" . route('order.details', ['id' => $row->id]) . "' class='btn btn-sm btn-primary update-btn' style='margin-bottom:10px;' target='_blank'>Details</a>";
